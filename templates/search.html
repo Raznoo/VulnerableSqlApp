@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Challenge</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .search-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-container input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .search-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            background-color: #45a049;
+        }
+
+        /* Container for API response */
+        #response-container {
+            margin-top: 40px;
+            padding: 30px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px; /* Constrain the width of the response box */
+            width: 100%;
+            text-align: center;
+            margin: 0 auto;
+            overflow-x: auto; /* Allow horizontal scrolling if content overflows */
+            overflow-y: auto; /* Allow vertical scrolling if content overflows */
+            max-height: 400px; /* Constrain the height of the response container */
+        }
+
+        /* Ensure the message inside the container is fully visible */
+        #apiResponse {
+            word-wrap: break-word; /* Break long words to fit within the container */
+            white-space: pre-wrap; /* Keep formatting but allow wrapping */
+            margin-bottom: 20px;
+            text-align: left; /* Align message text to the left */
+        }
+
+        /* Table inside the response container */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            table-layout: auto;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        {% for i in range(1, 11) %}
+        <div class="dropdown">
+            <button class="dropbtn">Menu {{ i }}</button>
+            <div class="dropdown-content">
+                <a href="/menu{{ i }}/intro">Intro</a> <!-- Add Intro option -->
+                {% for j in range(1, 6) %}
+                <a href="/menu{{ i }}/challenge{{ j }}">Challenge {{ j }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+
+    <div class="container">
+        <h1>Challenge {{ menu_id }} - {{ challenge_id }}</h1>
+        <div class="welcome-message">{{ menu_message }}</div>
+        <div class="search-container">
+            <form id="searchForm">
+                <input type="text" placeholder="{{ default_text }}" name="searchQuery" required>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+        <div id="response-container">
+            <h3>API Response</h3>
+            <pre id="apiResponse"></pre>
+            <div id="apiDataContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const formAction = window.location.pathname;
+
+            fetch(formAction, {
+                method: 'POST',
+                body: new URLSearchParams(formData),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response from API:', data);
+
+                const message = data.message || "No message provided.";
+                document.getElementById('apiResponse').textContent = message;
+
+                if (data.data && data.data.length > 0) {
+                    const tableContainer = document.getElementById('apiDataContainer');
+                    tableContainer.innerHTML = '';
+
+                    const table = document.createElement('table');
+                    const thead = document.createElement('thead');
+                    const tbody = document.createElement('tbody');
+
+                    const headers = Object.keys(data.data[0]);
+                    const headerRow = document.createElement('tr');
+                    headers.forEach(header => {
+                        const th = document.createElement('th');
+                        th.textContent = header;
+                        headerRow.appendChild(th);
+                    });
+                    thead.appendChild(headerRow);
+
+                    data.data.forEach(row => {
+                        const tr = document.createElement('tr');
+                        headers.forEach(header => {
+                            const td = document.createElement('td');
+                            td.textContent = row[header];
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+
+                    table.appendChild(thead);
+                    table.appendChild(tbody);
+                    tableContainer.appendChild(table);
+                    document.getElementById('response-container').style.display = 'block';
+                } else {
+                    document.getElementById('apiDataContainer').innerHTML = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('apiResponse').textContent = 'An error occurred: ' + error;
+                document.getElementById('response-container').style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>

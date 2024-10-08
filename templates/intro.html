@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu {{ menu_id }} Intro</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="topbar">
+        {% for i in range(1, 11) %}
+        <div class="dropdown">
+            <button class="dropbtn">Menu {{ i }}</button>
+            <div class="dropdown-content">
+                <a href="/menu{{ i }}/intro">Intro</a>
+                {% for j in range(1, 6) %}
+                <a href="/menu{{ i }}/challenge{{ j }}">Challenge {{ j }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="intro-container">
+        <h2>Welcome to Menu {{ menu_id }} Intro</h2>
+        <p>{{ explanation }}</p>
+
+        <!-- Display the entire table -->
+        {% if table_data %}
+        <div id="intro-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        {% for col in table_data[0].keys() %}
+                        <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in table_data %}
+                    <tr>
+                        {% for col, val in row.items() %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No data available for this table.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
